@@ -47,16 +47,24 @@ const run = async () => {
 			res.send(result);
 		});
 
+		app.post('/api/products/create', async (req, res) => {
+			const productsData = req.body;
+
+			const createProduct = await productsCollection.insertOne(productsData);
+			res.json(createProduct);
+		});
+
 		/***********************************************************************************
 		 * Orders APIS
 		 ***********************************************************************************/
-
+		//All orders
 		app.get('/api/orders/all', async (req, res) => {
 			const cursor = ordersCollection.find({});
 			const allOrders = await cursor.toArray();
 			res.send(allOrders.reverse());
 		});
 
+		//Specfic orders by userId
 		app.get('/api/orders/:uid', async (req, res) => {
 			const uid = req.params.uid;
 			const query = { uid };
@@ -64,6 +72,41 @@ const run = async () => {
 			const cursor = ordersCollection.find(query);
 			const result = await cursor.toArray();
 			res.send(result.reverse());
+		});
+
+		//Create new order
+		app.post('/api/orders/create', async (req, res) => {
+			const ordersData = req.body;
+
+			const createOrder = await ordersCollection.insertOne(ordersData);
+			res.json(createOrder);
+		});
+
+		// Update Order
+		app.put('/api/order/update/status/:id', async (req, res) => {
+			const { id, status } = req.params.id;
+			const filter = { _id: ObjectId(id) };
+			const options = { upsert: true };
+			const updateDoc = {
+				$set: {
+					status: status,
+				},
+			};
+			const result = await ordersCollection.updateOne(
+				filter,
+				updateDoc,
+				options
+			);
+			res.json(result);
+		});
+
+		// DELETE order
+		app.delete('/api/order/delete/:id', async (req, res) => {
+			const id = req.params.id;
+			const query = { _id: ObjectId(id) };
+			const result = await ordersCollection.deleteOne(query);
+
+			res.json(result);
 		});
 
 		/***********************************************************************************
@@ -76,9 +119,23 @@ const run = async () => {
 			res.send(allReviews.reverse());
 		});
 
+		app.post('/api/reviews/create', async (req, res) => {
+			const reviewsData = req.body;
+
+			const createReview = await reviewsCollection.insertOne(reviewsData);
+			res.json(createReview);
+		});
+
 		/***********************************************************************************
-		 * Find specific user by uid
+		 * Users APIS
 		 ***********************************************************************************/
+
+		app.post('/api/users/create', async (req, res) => {
+			const userData = req.body;
+
+			const createUser = await productsCollection.insertOne(userData);
+			res.json(createUser);
+		});
 
 		app.get('/api/users/:uid', async (req, res) => {
 			const uid = req.params.uid;
@@ -88,119 +145,32 @@ const run = async () => {
 		});
 
 		/***********************************************************************************
-		 * Find specific user by uid
+		 * Admin APIS
 		 ***********************************************************************************/
 
-		// POST API FOR CREATE DESTINATION
-		app.post('/api/create/destinations', async (req, res) => {
-			const destinationData = req.body;
-
-			const result = await destinationCollections.insertOne(destinationData);
+		app.put('/api/admin/create/:email', async (req, res) => {
+			const { email } = req.params;
+			const filter = { email };
+			const options = { upsert: true };
+			const updateDoc = {
+				$set: {
+					status: 'admin',
+				},
+			};
+			const result = await usersCollection.updateOne(
+				filter,
+				updateDoc,
+				options
+			);
 			res.json(result);
 		});
 
-		//Bookings end points
-		app.get('/api/Orders', async (req, res) => {
-			const cursor = bookingOrderCollection.find({});
-
-			const allOrders = await cursor.toArray();
-			res.json(allOrders);
-		});
-
-		app.get('/api/orders/:uid', async (req, res) => {
+		app.get('/api/products/:uid', async (req, res) => {
 			const uid = req.params.uid;
-			const query = { uid: uid };
-
-			const cursor = bookingOrderCollection.find(query);
-
-			if ((await cursor.count()) === 0) {
-				return res.json([]);
-			}
-
+			const query = { uid };
+			const cursor = productsCollection.find(query);
 			const result = await cursor.toArray();
 			res.send(result.reverse());
-		});
-
-		// Create new destinations
-
-		app.post('/api/booking/newOrder', async (req, res) => {
-			const {
-				price,
-				place,
-				email,
-				uid,
-				phone,
-				paymentMethod,
-				message,
-				status,
-				author,
-			} = req.body;
-
-			const bookingData = {
-				uid,
-				email,
-				phone,
-				paymentMethod,
-				message,
-				status,
-				price,
-				place,
-				date: new Date().toDateString(),
-				author,
-			};
-			const Result = await bookingOrderCollection.insertOne(bookingData);
-
-			res.json(Result);
-		});
-
-		// DELETE API
-		app.delete('/api/order/delete/:id', async (req, res) => {
-			const id = req.params.id;
-			const query = { _id: ObjectId(id) };
-			const result = await bookingOrderCollection.deleteOne(query);
-
-			res.json(result);
-		});
-
-		// Update Api
-
-		// update order status pending to approved
-
-		app.put('/api/order/update/status/:id', async (req, res) => {
-			const id = req.params.id;
-			const filter = { _id: ObjectId(id) };
-			const options = { upsert: true };
-			const updateDoc = {
-				$set: {
-					status: 'Approved',
-				},
-			};
-			const result = await bookingOrderCollection.updateOne(
-				filter,
-				updateDoc,
-				options
-			);
-			res.json(result);
-		});
-
-		app.put('/api/order/cancel/:id', async (req, res) => {
-			const id = req.params.id;
-
-			const filter = { _id: ObjectId(id) };
-
-			const updateDoc = {
-				$set: {
-					status: 'Cancelled',
-				},
-			};
-			const options = { upsert: true };
-
-			const result = await bookingOrderCollection.updateOne(
-				filter,
-				updateDoc,
-				options
-			);
-			res.json(result);
 		});
 	} finally {
 		// await client.close()
