@@ -108,6 +108,19 @@ const run = async () => {
 
 			res.json(result);
 		});
+		// create an user google user
+		app.put('/api/users/createUser', async (req, res) => {
+			const userData = req.body;
+			const filter = { email: userData.email };
+			const options = { upsert: true };
+			const updateDoc = { $set: userData };
+			const result = await usersCollection.updateOne(
+				filter,
+				updateDoc,
+				options
+			);
+			res.json(result);
+		});
 
 		/***********************************************************************************
 		 * Reviews APIS
@@ -133,7 +146,7 @@ const run = async () => {
 		app.post('/api/users/create', async (req, res) => {
 			const userData = req.body;
 
-			const createUser = await productsCollection.insertOne(userData);
+			const createUser = await usersCollection.insertOne(userData);
 			res.json(createUser);
 		});
 
@@ -154,7 +167,7 @@ const run = async () => {
 			const options = { upsert: true };
 			const updateDoc = {
 				$set: {
-					status: 'admin',
+					role: 'admin',
 				},
 			};
 			const result = await usersCollection.updateOne(
