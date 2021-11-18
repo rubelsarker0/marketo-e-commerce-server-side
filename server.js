@@ -48,9 +48,9 @@ const run = async () => {
 		});
 
 		app.post('/api/products/create', async (req, res) => {
-			const productsData = req.body;
+			const productData = req.body;
 
-			const createProduct = await productsCollection.insertOne(productsData);
+			const createProduct = await productsCollection.insertOne(productData);
 			res.json(createProduct);
 		});
 
