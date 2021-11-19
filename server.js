@@ -54,6 +54,14 @@ const run = async () => {
 			res.json(createProduct);
 		});
 
+		app.delete('/api/products/delete/:id', async (req, res) => {
+			const id = req.params.id;
+			const query = { _id: ObjectId(id) };
+			const result = await productsCollection.deleteOne(query);
+
+			res.json(result);
+		});
+
 		/***********************************************************************************
 		 * Orders APIS
 		 ***********************************************************************************/
@@ -83,8 +91,8 @@ const run = async () => {
 		});
 
 		// Update Order
-		app.put('/api/order/update/status/:id', async (req, res) => {
-			const { id, status } = req.params.id;
+		app.put('/api/order/update/:status/:id', async (req, res) => {
+			const { id, status } = req.params;
 			const filter = { _id: ObjectId(id) };
 			const options = { upsert: true };
 			const updateDoc = {
